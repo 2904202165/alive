@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>活着么</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body { 
+            font-family: 'Noto Sans SC', sans-serif; 
+            background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%); 
+            min-height: 100vh;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            box-shadow: 0 10px 40px -10px rgba(0,0,0,0.08);
+        }
+        .tap-effect:active { transform: scale(0.96); }
+        @keyframes gentle-breathe {
+            0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4); }
+            70% { box-shadow: 0 0 0 15px rgba(59, 130, 246, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+        }
+        .pulse-blue { animation: gentle-breathe 2.5s infinite; }
+        
+        /* 🛡️ HoneyPot: Trap for bots, invisible to humans */
+        .honey-pot { opacity: 0; position: absolute; top: 0; left: 0; height: 0; width: 0; z-index: -1; }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-center p-4 relative overflow-hidden">
+
+    <div class="absolute top-0 left-0 w-64 h-64 bg-blue-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
+    <div class="absolute bottom-0 right-0 w-64 h-64 bg-orange-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
+
+    <div id="loginLayer" class="glass-card w-full max-w-sm p-8 rounded-3xl z-10 animate__animated animate__fadeInUp">
+        <div class="text-center mb-8">
+            <h1 class="text-2xl font-bold text-gray-800 tracking-wide">欢迎使用</h1>
+            <p class="text-gray-500 mt-2">简单一步，开启平安守护</p>
+        </div>
+        
+        <div class="space-y-5">
+            <div>
+                <label class="block text-gray-600 font-bold mb-2 ml-1 text-lg">您的称呼</label>
+                <input type="text" id="accountInput" placeholder="例如：李大爷" 
+                    class="w-full text-xl p-4 rounded-xl bg-gray-50 border border-gray-200 focus:border-blue-500 outline-none">
+            </div>
+
+            <input type="text" id="nickname_trap" class="honey-pot" tabindex="-1" autocomplete="off">
+            
+            <div>
+                <label class="block text-gray-600 font-bold mb-2 ml-1 text-lg">家人邮箱 (接收通知)</label>
+                <input type="email" id="emailInput" placeholder="填写子女邮箱" 
+                    class="w-full text-xl p-4 rounded-xl bg-gray-50 border border-gray-200 focus:border-blue-500 outline-none">
+            </div>
+
+            <button onclick="doLogin()" class="tap-effect w-full bg-blue-600 hover:bg-blue-700 text-white text-xl font-bold py-5 rounded-2xl shadow-lg mt-4">
+                进入系统
+            </button>
+        </div>
+    </div>
+
+    <div id="mainLayer" class="hidden flex-col items-center w-full max-w-md z-10">
+        
+        <div class="w-full flex justify-between items-center mb-6 px-2">
+            <div>
+                <h2 id="siteTitle" class="text-2xl font-bold text-gray-800">活着么</h2>
+                <p class="text-sm text-gray-500 mt-1">用户: <span id="userNameDisplay" class="font-bold text-blue-600">...</span></p>
+            </div>
+            <button onclick="logout()" class="px-4 py-2 bg-white rounded-full text-sm text-gray-500 shadow-sm border border-gray-100 hover:text-red-500">
+                退出
+            </button>
+        </div>
+
+        <div id="aiWarmthBox" class="w-full mb-10 bg-white/80 backdrop-blur-md rounded-2xl p-5 shadow-sm border border-white hidden animate__animated animate__fadeInDown">
+            <div class="flex gap-4">
+                <div class="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center text-2xl flex-shrink-0">🌞</div>
+                <div>
+                    <p class="text-xs text-orange-500 font-bold uppercase tracking-wider mb-1">今日贴士</p>
+                    <p id="aiWarmthText" class="text-gray-700 text-lg font-medium leading-relaxed">正在加载...</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="relative mb-10 group">
+            <div class="absolute inset-0 bg-blue-400 rounded-full blur-xl opacity-20 group-hover:opacity-30 transition-opacity duration-500"></div>
+            
+            <button id="checkInBtn" onclick="doCheckIn()" 
+                class="tap-effect pulse-blue relative w-72 h-72 rounded-full flex flex-col items-center justify-center bg-white border-8 border-gray-100 shadow-2xl overflow-hidden transition-all duration-300">
+                
+                <div id="btnIcon" class="text-7xl mb-4 transition-transform duration-300 group-hover:scale-110">👋</div>
+                <div id="btnText" class="text-2xl font-bold text-gray-700">点我报平安</div>
+                
+                <div id="successMask" class="absolute inset-0 bg-emerald-500 flex flex-col items-center justify-center transform translate-y-full transition-transform duration-500">
+                    <div class="text-7xl text-white mb-4 animate__animated animate__bounceIn">✅</div>
+                    <div class="text-3xl font-bold text-white">已确认</div>
+                    <div class="text-white/80 text-sm mt-2">祝您心情愉快</div>
+                </div>
+            </button>
+        </div>
+
+        <div class="glass-card w-full p-5 rounded-2xl flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-400">🕒</div>
+                <div>
+                    <p class="text-sm text-gray-500">上次确认时间</p>
+                    <p id="lastTime" class="text-lg font-bold text-gray-800">读取中...</p>
+                </div>
+            </div>
+            <div id="statusDot" class="w-3 h-3 rounded-full bg-gray-300"></div>
+        </div>
+
+    </div>
+
+    <script>
+        const API = './api.php';
+        
+        window.onload = function() {
+            // Init Title
+            fetch(`${API}?action=init`).then(r=>r.json()).then(res => {
+                if(res.code===200) {
+                    document.title = res.data.title;
+                    document.getElementById('siteTitle').innerText = res.data.title;
+                }
+            });
+
+            // Check Login Status
+            const savedUid = localStorage.getItem('user_uid');
+            const savedName = localStorage.getItem('user_name');
+            if(savedUid) {
+                refreshStatus(savedUid, savedName);
+            }
+        };
+
+        function refreshStatus(uid, name) {
+            document.getElementById('loginLayer').classList.add('hidden');
+            document.getElementById('mainLayer').classList.remove('hidden');
+            document.getElementById('mainLayer').classList.add('flex');
+            document.getElementById('userNameDisplay').innerText = name;
+            
+            // Load AI text
+            loadAIWarmth(name);
+
+            // Sync Status from Server
+            fetch(`${API}?action=get_status`, {
+                method: 'POST', body: JSON.stringify({ uid: uid })
+            })
+            .then(r => r.json())
+            .then(res => {
+                if(res.code === 200) updateVisuals(res.data.last_check_in);
+            });
+        }
+
+        function updateVisuals(timeStr) {
+            const timeDisplay = document.getElementById('lastTime');
+            const dot = document.getElementById('statusDot');
+            
+            if(!timeStr) {
+                timeDisplay.innerText = "从未";
+                return;
+            }
+
+            timeDisplay.innerText = timeStr;
+            dot.classList.remove('bg-gray-300');
+            dot.classList.add('bg-green-500');
+            timeDisplay.classList.add('text-green-600');
+        }
+
+        function doLogin() {
+            const account = document.getElementById('accountInput').value;
+            const email = document.getElementById('emailInput').value;
+            const trap = document.getElementById('nickname_trap').value; // HoneyPot
+
+            if(!account) return alert('请填写入您的称呼');
+            if(!email) return alert('请填写子女或亲属的邮箱');
+
+            fetch(`${API}?action=login`, {
+                method: 'POST', body: JSON.stringify({ account, email, trap })
+            }).then(r => r.json()).then(res => {
+                if(res.code === 200) {
+                    localStorage.setItem('user_uid', res.data.id);
+                    localStorage.setItem('user_name', res.data.username);
+                    refreshStatus(res.data.id, res.data.username);
+                } else {
+                    alert(res.msg);
+                }
+            });
+        }
+
+        function loadAIWarmth(name) {
+            const box = document.getElementById('aiWarmthBox');
+            const txt = document.getElementById('aiWarmthText');
+            box.classList.remove('hidden');
+            
+            fetch(`${API}?action=get_ai_warmth&name=${encodeURIComponent(name)}`)
+                .then(r => r.json())
+                .then(res => {
+                    if(res.code === 200) txt.innerText = res.data.text;
+                })
+                .catch(e => {
+                    txt.innerText = name + "，今天也要开开心心的哦！";
+                });
+        }
+
+        function doCheckIn() {
+            const uid = localStorage.getItem('user_uid');
+            const btn = document.getElementById('checkInBtn');
+            btn.style.transform = "scale(0.95)";
+
+            fetch(`${API}?action=heartbeat`, {
+                method: 'POST', body: JSON.stringify({ uid })
+            }).then(r => r.json()).then(res => {
+                btn.style.transform = "scale(1)";
+                if(res.code === 200) {
+                    showSuccessEffect();
+                    // Double check status
+                    fetch(`${API}?action=get_status`, {method:'POST', body:JSON.stringify({uid})})
+                        .then(r=>r.json()).then(d=>updateVisuals(d.data.last_check_in));
+                }
+                else alert(res.msg);
+            }).catch(err => {
+                btn.style.transform = "scale(1)";
+                alert('网络不通');
+            });
+        }
+
+        function showSuccessEffect() {
+            const mask = document.getElementById('successMask');
+            const btn = document.getElementById('checkInBtn');
+            mask.classList.remove('translate-y-full'); 
+            mask.classList.add('translate-y-0');
+            btn.classList.remove('pulse-blue');
+            btn.style.borderColor = '#10b981';
+        }
+
+        function logout() {
+            if(confirm('确定要退出当前账号吗？')) {
+                localStorage.removeItem('user_uid');
+                localStorage.removeItem('user_name');
+                location.reload();
+            }
+        }
+    </script>
+</body>
+</html>
